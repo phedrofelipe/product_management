@@ -14,9 +14,17 @@ endpoint.post("/", async (req, res) => {
     return res.send(user);
 });
 
+// Endpoint para listar todos os usuários
+endpoint.get("/", async (req, res) => {
+    const user = await User.find();
+    return res.send(user);
+});
+
+
 // Endpoint para editar usuário
 endpoint.patch("/:id", async (req, res) => {
-    const user = await User.findByIdAndUpdate(req.params.dictionary, {
+    const user = await User.findByIdAndUpdate(req.params.id, {
+        username: req.body.username,
         password: req.body.password
     }, {
         new: true
@@ -28,7 +36,7 @@ endpoint.patch("/:id", async (req, res) => {
 // Endpoint para excluir usuário
 endpoint.delete("/:id", async (req, res) => {
     const user = await User.findByIdAndDelete(req.params.id);
-    return res.send(User);
+    return res.send(user);
 });
 
 module.exports = endpoint;

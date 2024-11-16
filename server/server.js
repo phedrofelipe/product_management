@@ -10,9 +10,9 @@ app.use(express.json());
 
 connectDB();
 
-app.use("api/category", categoryEndpoint);
-app.use("api/product", productEndpoint);
-app.use("api/user", userEndpoint);
+app.use("/api/category", categoryEndpoint);
+app.use("/api/product", productEndpoint);
+app.use("/api/user", userEndpoint);
 
 const port = 3000;
 
