@@ -18,6 +18,7 @@
 2. **Ferramenta de teste de API:** Instale um software como <a href="https://www.postman.com/downloads/" target="_blank"> Postman </a> ou <a href="https://insomnia.rest/download" target="_blank"> Insomnia </a>.
 3. **MongoDB Atlas:** O banco de dados está hospedado no Atlas com acesso restrito por IPs. Os IPs permitidos são:
    - 186.249.18.37/32
+   - 45.174.128.1/32
 
 ### Verificando seu IP:
 - Acesse o site <a href="https://meuip.com.br/" target="_blank"> Meu IP </a> e valide qual o IP Público da sua conexão de rede atual.
