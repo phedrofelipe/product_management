@@ -6,7 +6,7 @@ const logRequests = require("../middlewares/logRequests.js");
 const endpoint = express();
 
 // Endpoint para criar uma categoria
-endpoint.post("/", verifyJWT, logRequests, async (req, res) => {
+endpoint.post("/", async (req, res) => {
     const category = new Category({
         categoryName: req.body.categoryName,
         categoryDescription: req.body.categoryDescription
@@ -15,6 +15,7 @@ endpoint.post("/", verifyJWT, logRequests, async (req, res) => {
     await category.save();
     return res.send(category);
 });
+
 
 // Endpoint para buscar todas as categorias
 endpoint.get("/", verifyJWT, logRequests, async (req, res) => {
