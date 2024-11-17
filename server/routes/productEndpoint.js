@@ -11,30 +11,37 @@ const endpoint = express();
 endpoint.post("/", verifyJWT, logRequests, async (req, res) => {
     const { productName, productDescription, amount, price, categoryId } = req.body;
     try {
-
         // Validar se o produto já está cadastrado
         const existingProduct = await Product.findOne({ productName });
         if (existingProduct) {
             return res.status(400).send({ message: "Produto já cadastrado!" });
         };
 
-        // Validar se a categoria existe
-        const category = await Category.findById( categoryId );
-        if (!category) {
-            return res.status(400).send({ message: "Categoria não identificada!" });
-        }
+        // Na criação do produto será possível definir uma lista de categorias vinculadas ao cadastro, identificando se o registro das categorias é um array válido (ou vazio, caso não seja fornecido)
+        const validCategoryId = Array.isArray(categoryId) ? categoryId : (categoryId ? [categoryId]: []);
+
+        // Validar se as categorias foram vinculadas ao criar o produto
+        for (const catId of validCategoryId) {
+            const category = await Category.findById(catId);
+
+            // Caso a categoria vinculada não seja encontrada, retornar erro
+            if (!category) {
+                return res.status(400).send({ message: `Categoria id ${catId} não identificada!` });
+            };
+        };
 
         // Criar novo produto
-        const product = new Product({ productName, productDescription, amount, price, categoryId: categoryId });
+        const product = new Product({ productName, productDescription, amount, price, categoryId: validCategoryId });
         await product.save();
 
-        // Ao criar o produto, será vinculado o ID do produto no cadastro da categoria. Será utilizado o "for" no cenário do vínculo de mais de uma categoria ao mesmo produto
-        for (const catId of categoryId) {
+        // Ao validar uma categoria vinculada no cadastro do produto, será incluso o ID do produto no cadastro da categoria. Será utilizado o "for" no cenário do vínculo do ID do produto a mais de uma categoria
+        for (const catId of validCategoryId) {
             const category = await Category.findById(catId);
+
             // Caso haja o vínculo de categoria ao produto, o ID do produto será vinculado ao cadastro da categoria
             if (category) {
-                category.productId.push(product._id);
-                await category.save();
+            category.productId.push(product._id);
+            await category.save();
             };
         };
 

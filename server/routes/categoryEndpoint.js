@@ -11,47 +11,38 @@ const endpoint = express();
 endpoint.post("/", verifyJWT, logRequests, async (req, res) => {
     const { categoryName, categoryDescription, productId } = req.body;
     try{
-        // Validar se a categoria já está cadastrado
+        // Validar se a categoria já está cadastrada
         const existingCategory = await Category.findOne({ categoryName });
         if (existingCategory) {
             return res.status(400).send({ message: "Categoria já cadastrada!" });
-        }
+        };
 
-        // Na criação da categoria será possível definir uma lista de produtos vinculados ao cadastro, validando se o registro dos produtos é válido
-        let validProductId = [];
+        // Na criação da categoria será possível definir uma lista de produtos vinculados ao cadastro, identificando se o registro dos produtos é um array válido (ou vazio, caso não seja fornecido)
+        const validProductId = Array.isArray(productId) ? productId : (productId ? [productId]: []);
 
-        if (productId && Array.isArray(productId)) { // Será verificado se o campo productId foi preenchido
-            validProductId = await Promise.all(
-                productId.map(async (prodId) => {
-                    const product = await Product.findById(prodId);
-                    return product ? prodId : null;
-                })
-            );
-            
-            // Filtrar IDs inválidos
-            validProductId = validProductId.filter(Boolean);
+        // Validar se os produtos foram vinculadas ao criar a categoria
+        for (const prodId of validProductId) {
+            const product = await Product.findById(prodId);
 
-            // Caso algum ID seja inválido, retornará erro
-            if (validProductId.length !== productId.length) {
-                return res.status(400).send({ message: "Produto inválido!" });
+            // Caso o produto vinculado não seja encontrado, retornar erro
+            if (!product) {
+                return res.status(400).send({ message: `Produto id ${prodId} não identificado!` });
             };
         };
 
         // Criar nova categoria
-        const category = new Category({ categoryName, categoryDescription, productId: validProductId.length > 0 ? validProductId : undefined });
+        const category = new Category({ categoryName, categoryDescription, productId: validProductId });
         await category.save();
 
-        // Ao validar um produto no cadastro da categoria, será feita a inclusão do ID da categoria no cadastro do produto
-        if (validProductId.length > 0) {
-            await Promise.all(
-                validProductId.map(async (prodId) => {
-                    const product = await Product.findById(prodId);
-                    if (product && Array.isArray(product.productId)) {
-                        product.productId.push(category._id);
-                        await product.save();
-                    }
-                })
-            );
+        // Ao validar um produto vinculado no cadastro da categoria, será incluso o ID da categoria no cadastro do produto. Será utilizado o "for" no cenário do vínculo do ID da categoria a mais de um produto
+        for (const prodId of validProductId) {
+            const product = await Product.findById(prodId);
+
+            // Caso haja o vínculo de produto a categoria, o ID da categoria será vinculado ao cadastro do produto
+            if (product) {
+                product.categoryId.push(category._id);
+                await product.save();
+            };
         };
 
         return res.status(201).send({ message: `A categoria ${category.categoryName} foi cadastrada com sucesso!`, category });
