@@ -1,10 +1,12 @@
 const express = require("express");
 const Product = require("../models/productModel.js");
+const verifyJWT = require("../middlewares/verifyJWT.js");
+const logRequests = require("../middlewares/logRequests.js");
 
 const endpoint = express();
 
 // Endpoint para criar um produto
-endpoint.post("/", async (req, res) => {
+endpoint.post("/", verifyJWT, logRequests, async (req, res) => {
     const product = new Product({
         productName: req.body.productName,
         productDescription: req.body.productDescription,
@@ -17,19 +19,19 @@ endpoint.post("/", async (req, res) => {
 });
 
 // Endpoint para buscar todos os produtos
-endpoint.get("/", async (req, res) => {
+endpoint.get("/", verifyJWT, logRequests, async (req, res) => {
     const product = await Product.find();
     return res.send(product);
 });
 
 // Endpoint para buscar um produto específico
-endpoint.get("/:id", async (req, res) => {
+endpoint.get("/:id", verifyJWT, logRequests, async (req, res) => {
     const product = await Product.findById(req.params.id);
     return res.send(product);
 });
 
 // Endpoint para editar um produto específico
-endpoint.patch("/:id", async (req, res) => {
+endpoint.patch("/:id", verifyJWT, logRequests, async (req, res) => {
     const product = await Product.findByIdAndUpdate(req.params.id, {
         productName: req.body.productName,
         productDescription: req.body.productDescription,
@@ -43,7 +45,7 @@ endpoint.patch("/:id", async (req, res) => {
 });
 
 // Endpoint para atualizar um produto específico
-endpoint.put("/:id", async (req, res) => {
+endpoint.put("/:id", verifyJWT, logRequests, async (req, res) => {
     const product = await Product.findByIdAndUpdate(req.params.id, {
         productName: req.body.productName,
         productDescription: req.body.productDescription,
@@ -57,7 +59,7 @@ endpoint.put("/:id", async (req, res) => {
 });
 
 // Endpoint para excluir um produto específico
-endpoint.delete("/:id", async (req, res) => {
+endpoint.delete("/:id", verifyJWT, logRequests, async (req, res) => {
     const product = await Product.findByIdAndDelete(req.params.id);
     return res.send(product);
 });

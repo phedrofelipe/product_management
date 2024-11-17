@@ -1,10 +1,13 @@
 const express = require("express");
 const User = require("../models/userModel.js");
+const generateToken = require("../middlewares/authService.js");
+const verifyJWT = require("../middlewares/verifyJWT.js");
+const logRequests = require("../middlewares/logRequests.js");
 
 const endpoint = express();
 
 // Endpoint para criar um usuário
-endpoint.post("/", async (req, res) => {
+endpoint.post("/", logRequests, async (req, res) => {
     try {
         const { username, password } = req.body;
 
@@ -25,7 +28,7 @@ endpoint.post("/", async (req, res) => {
 });
 
 // Endpoint para listar todos os usuários
-endpoint.get("/", async (req, res) => {
+endpoint.get("/", verifyJWT, logRequests, async (req, res) => {
     try {
         // Buscar todos os usuários
         const user = await User.find();
@@ -36,7 +39,7 @@ endpoint.get("/", async (req, res) => {
 });
 
 // Endpoint para editar usuário
-endpoint.patch("/:id", async (req, res) => {
+endpoint.patch("/:id", verifyJWT, logRequests, async (req, res) => {
     try {
         const { username, password } = req.body;
 
@@ -60,7 +63,7 @@ endpoint.patch("/:id", async (req, res) => {
 
 
 // Endpoint para excluir usuário
-endpoint.delete("/:id", async (req, res) => {
+endpoint.delete("/:id", verifyJWT, logRequests, async (req, res) => {
     try {
         // Buscar e deletar usuário
         const user = await User.findByIdAndDelete(req.params.id);
@@ -77,7 +80,7 @@ endpoint.delete("/:id", async (req, res) => {
 });
 
 // Endpoint para validar login (Usuário e senha)
-endpoint.post("/login", async (req, res) => {
+endpoint.post("/login", logRequests, async (req, res) => {
     try {
         const { username, password } = req.body;
 
@@ -87,7 +90,10 @@ endpoint.post("/login", async (req, res) => {
             return res.status(401).send({ message: "Usuário ou senha incorretos, tente novamente!" });
         };
 
-        return res.status(200).send({ message: `Login efetuado com sucesso. Seja bem-vindo ${user.username}!` });
+        // Gerar Json Web Token (JWT) de autenticação do usuário
+        const token = generateToken({ userId: user._id });
+
+        return res.status(200).send({ message: `Login efetuado com sucesso. Seja bem-vindo ${user.username}!`, token });
     } catch (error) {
         return res.status(500).send({ message: "Erro ao validar login.", error: error.message });
     };
