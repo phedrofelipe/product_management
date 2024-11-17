@@ -12,7 +12,7 @@ endpoint.post("/", verifyJWT, logRequests, async (req, res) => {
     const { productName, productDescription, amount, price, categoryId } = req.body;
     try {
 
-        // Validar se produto já está cadastrado
+        // Validar se o produto já está cadastrado
         const existingProduct = await Product.findOne({ productName });
         if (existingProduct) {
             return res.status(400).send({ message: "Produto já cadastrado!" });
@@ -49,9 +49,9 @@ endpoint.post("/", verifyJWT, logRequests, async (req, res) => {
 endpoint.get("/", verifyJWT, logRequests, async (req, res) => {
     try {
         const product = await Product.find().populate("categoryId", "categoryName");
-        return res.status(200).send({ message:  "Produtos localizados com sucesso!", product });
+        return res.status(200).send({ message: "Produtos localizados com sucesso!", product });
     } catch (error) {
-        return res.status(500).send({ message: "Não foi possível localizar os produtos.", error: error.message})
+        return res.status(500).send({ message: "Não foi possível localizar os produtos.", error: error.message });
     };
 });
 
@@ -88,7 +88,7 @@ endpoint.patch("/:id", verifyJWT, logRequests, async (req, res) => {
             return res.status(404).send({ message: "Produto não encontrado!" });
         };
 
-        return res.status(200).send({ message: "Produto editado com sucesso!", product });
+        return res.status(201).send({ message: "Produto editado com sucesso!", product });
     } catch (error) {
         return res.status(500).send({ message: "Não foi possível editar o produto.", error: error.message });
     };
@@ -110,7 +110,7 @@ endpoint.put("/:id", verifyJWT, logRequests, async (req, res) => {
             return res.status(404).send({ message: "Produto não encontrado!" });
         };
 
-        return res.status(200).send({ message: "Produto atualizado com sucesso!", product });
+        return res.status(201).send({ message: "Produto atualizado com sucesso!", product });
     } catch (error) {
         return res.status(500).send({ message: "Não foi possível atualizar o produto.", error: error.message });
     };
